@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>bAV-Rechner – Lohnt sich die betriebliche Altersvorsorge?</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f0f2f5;
+    --surface: #ffffff;
+    --surface2: #f8f9fb;
+    --ink: #0f1117;
+    --ink-muted: #6e7585;
+    --accent: #1a6b4a;
+    --accent-bg: #edf7f2;
+    --accent-border: #a8ddc3;
+    --warn: #c0392b;
+    --warn-bg: #fdf2f1;
+    --warn-border: #f0b8b3;
+    --border: #e4e7ed;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+    --shadow-md: 0 2px 8px rgba(0,0,0,0.08), 0 8px 32px rgba(0,0,0,0.06);
+    --radius: 16px;
+    --radius-sm: 10px;
+    --sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+    --mono: 'JetBrains Mono', monospace;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    min-height: 100vh;
+    line-height: 1.5;
+  }
+
+  /* HEADER */
+  header {
+    background: linear-gradient(135deg, #0f2419 0%, #1a4a30 60%, #1e5c3a 100%);
+    color: white;
+    padding: 3rem 2rem 2.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 80% 50%, rgba(40,180,100,0.12) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .header-inner {
+    max-width: 860px;
+    margin: 0 auto;
+    position: relative;
+  }
+  .header-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 100px;
+    padding: 0.3rem 0.85rem;
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    color: rgba(255,255,255,0.75);
+    margin-bottom: 1.25rem;
+  }
+  .header-pill::before {
+    content: '';
+    width: 6px; height: 6px;
+    background: #4ade80;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.5rem);
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.75rem;
+  }
+  header h1 span { color: #4ade80; }
+  .header-sub {
+    font-size: 1rem;
+    color: rgba(255,255,255,0.6);
+    font-weight: 400;
+    max-width: 520px;
+    line-height: 1.6;
+  }
+
+  /* MAIN */
+  main {
+    background: var(--bg);
+  }
+
+  /* CARD */
+  .card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    padding: 1.75rem;
+    margin-bottom: 1.25rem;
+  }
+  .card-title {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .card-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* FORM */
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+  @media (max-width: 560px) { .form-grid { grid-template-columns: 1fr; } }
+
+  .field { display: flex; flex-direction: column; gap: 0.45rem; }
+  .field label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+  .field .hint {
+    font-size: 0.7rem;
+    color: var(--ink-muted);
+    line-height: 1.4;
+  }
+
+  .input-wrap { position: relative; }
+  .input-wrap .unit {
+    position: absolute;
+    right: 0.9rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.8rem;
+    color: var(--ink-muted);
+    font-weight: 500;
+    pointer-events: none;
+  }
+
+  input[type=number], select {
+    width: 100%;
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0.65rem 2.2rem 0.65rem 0.9rem;
+    font-size: 0.95rem;
+    font-family: var(--sans);
+    font-weight: 500;
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+  input[type=number]:focus, select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(26,107,74,0.1);
+    background: white;
+  }
+  select { padding-right: 2rem; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236e7585' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.85rem center; }
+
+  /* SLIDER */
+  .slider-row { display: flex; align-items: center; gap: 0.75rem; }
+  .slider-row input[type=range] {
+    flex: 1;
+    -webkit-appearance: none;
+    height: 4px;
+    background: var(--border);
+    border-radius: 100px;
+    border: none;
+    padding: 0;
+    outline: none;
+  }
+  .slider-row input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px; height: 18px;
+    background: var(--accent);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    transition: transform 0.1s;
+  }
+  .slider-row input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.15); }
+  .slider-val {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--accent);
+    min-width: 3.5rem;
+    text-align: right;
+    background: var(--accent-bg);
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+  }
+
+  /* BUTTON */
+  .calc-btn {
+    width: 100%;
+    margin-top: 1.5rem;
+    padding: 0.9rem 1.5rem;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-family: var(--sans);
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+    letter-spacing: -0.01em;
+    box-shadow: 0 2px 8px rgba(26,107,74,0.25);
+  }
+  .calc-btn:hover {
+    background: #155c3e;
+    box-shadow: 0 4px 16px rgba(26,107,74,0.35);
+    transform: translateY(-1px);
+  }
+  .calc-btn:active { transform: translateY(0); }
+
+  /* RESULTS */
+  #results { display: none; }
+  #results.visible { display: block; }
+
+  /* VERDICT */
+  .verdict {
+    border-radius: var(--radius);
+    padding: 1.5rem 1.75rem;
+    margin-bottom: 1.25rem;
+    border: 1.5px solid transparent;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  .verdict.positive { background: var(--accent-bg); border-color: var(--accent-border); }
+  .verdict.negative { background: var(--warn-bg); border-color: var(--warn-border); }
+  .verdict.neutral { background: var(--surface2); border-color: var(--border); }
+  .verdict-icon {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+  }
+  .verdict.positive .verdict-icon { background: var(--accent); }
+  .verdict.negative .verdict-icon { background: var(--warn); }
+  .verdict.neutral .verdict-icon { background: var(--ink-muted); }
+  .verdict-text {}
+  .verdict-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin-bottom: 0.3rem;
+  }
+  .verdict-headline {
+    font-size: 1.1rem;
+    font-weight: 700;
+    line-height: 1.3;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.4rem;
+    color: var(--ink);
+  }
+  .verdict-sub {
+    font-size: 0.875rem;
+    color: var(--ink-muted);
+    line-height: 1.6;
+  }
+
+  /* COMPARE GRID */
+  .compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+  }
+  @media (max-width: 500px) { .compare-grid { grid-template-columns: 1fr; } }
+
+  .compare-card {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+    transition: border-color 0.2s;
+  }
+  .compare-card.winner { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(26,107,74,0.08), var(--shadow); }
+  .compare-card.loser { background: var(--surface2); border-color: var(--border); box-shadow: none; color: var(--ink-muted); }
+
+  .compare-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+  }
+  .compare-name {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+  }
+  .tag {
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.2rem 0.55rem;
+    border-radius: 100px;
+    letter-spacing: 0.04em;
+  }
+  .tag.green { background: var(--accent-bg); color: var(--accent); border: 1px solid var(--accent-border); }
+  .tag.red { background: var(--warn-bg); color: var(--warn); border: 1px solid var(--warn-border); }
+  .tag.grey { background: var(--surface2); color: var(--ink-muted); border: 1px solid var(--border); }
+
+  .big-num {
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    margin-bottom: 0.2rem;
+    font-family: var(--mono);
+  }
+  .big-num.green { color: var(--accent); }
+  .big-num.dark { color: var(--ink); }
+  .num-label {
+    font-size: 0.72rem;
+    color: var(--ink-muted);
+    margin-bottom: 1.25rem;
+    font-weight: 500;
+  }
+
+  .breakdown {
+    border-top: 1px solid var(--border);
+    padding-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+  .br-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.5rem;
+  }
+  .br-row .lbl { font-size: 0.73rem; color: var(--ink-muted); }
+  .br-row .val { font-size: 0.78rem; font-weight: 600; color: var(--ink); font-family: var(--mono); white-space: nowrap; }
+
+  /* BAR CHART */
+  .bar-section { margin-bottom: 1.25rem; }
+  .bar-item { margin-bottom: 1rem; }
+  .bar-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.45rem;
+  }
+  .bar-label .name { font-size: 0.8rem; font-weight: 600; color: var(--ink); }
+  .bar-label .amt { font-size: 0.78rem; font-weight: 600; color: var(--ink-muted); font-family: var(--mono); }
+  .bar-track {
+    height: 10px;
+    background: var(--surface2);
+    border-radius: 100px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .bar-fill {
+    height: 100%;
+    border-radius: 100px;
+    transition: width 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .bar-fill.bav { background: linear-gradient(90deg, #1a6b4a, #2ecc7a); }
+  .bar-fill.etf { background: linear-gradient(90deg, #2d3748, #4a5568); }
+
+  /* ASSUMPTIONS */
+  .assumptions ul { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+  .assumptions li {
+    font-size: 0.78rem;
+    color: var(--ink-muted);
+    padding-left: 1.1rem;
+    position: relative;
+    line-height: 1.5;
+  }
+  .assumptions li::before {
+    content: '·';
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 1rem;
+    line-height: 1.3;
+  }
+
+  /* DISCLAIMER */
+  .disclaimer {
+    font-size: 0.72rem;
+    color: var(--ink-muted);
+    line-height: 1.7;
+    text-align: left;
+    padding: 1.25rem 1.5rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface2);
+    margin-top: 0.5rem;
+  }
+  .disclaimer strong {
+    color: var(--ink);
+    display: block;
+    margin-bottom: 0.25rem;
+    font-size: 0.75rem;
+  }
+
+  @media (max-width: 860px) {
+    main > div[style*="grid"] {
+      grid-template-columns: 1fr !important;
+    }
+    main > div[style*="grid"] > div:last-child {
+      position: static !important;
+    }
+  }
+
+  /* ANIMATE */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .fade { animation: fadeUp 0.4s ease forwards; opacity: 0; }
+  .fade:nth-child(1) { animation-delay: 0s; }
+  .fade:nth-child(2) { animation-delay: 0.07s; }
+  .fade:nth-child(3) { animation-delay: 0.14s; }
+  .fade:nth-child(4) { animation-delay: 0.21s; }
+  .fade:nth-child(5) { animation-delay: 0.28s; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div style="margin-bottom:1.5rem;">
+      <span style="font-family:var(--sans); font-size:1.3rem; font-weight:700; letter-spacing:-0.03em; color:white;">Kapital<span style="color:#4ade80;">Plan</span></span>
+    </div>
+    <div class="header-pill">Unabhängiger Vergleich · Keine Produktempfehlung · <span style="color:rgba(255,255,255,0.6)">Nur für gesetzlich Krankenversicherte</span></div>
+    <h1>Lohnt sich die bAV<br>für <span>dich</span>?</h1>
+    <p class="header-sub">Ehrlicher Vergleich zwischen betrieblicher Altersvorsorge und privatem ETF-Sparplan — mit deinen konkreten Zahlen.</p>
+  </div>
+</header>
+
+<main>
+  <div style="display:grid; grid-template-columns:1fr 340px; gap:1.5rem; max-width:1200px; margin:0 auto; padding:2rem 1.25rem 4rem; align-items:start;">
+
+  <!-- LINKE SPALTE: Rechner -->
+  <div>
+    <div class="card-title">Deine Situation eingeben</div>
+    <div class="form-grid">
+
+      <div class="field">
+        <label>Bruttogehalt pro Monat</label>
+        <div class="input-wrap">
+          <input type="number" id="brutto" value="4000" min="1000" max="20000" step="100">
+          <span class="unit">€</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Steuerklasse</label>
+        <div class="input-wrap">
+          <select id="stklasse">
+            <option value="1">Klasse 1 — ledig</option>
+            <option value="3">Klasse 3 — verheiratet (Hauptverdiener)</option>
+            <option value="4">Klasse 4 — verheiratet (gleich)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Monatlicher Eigenbeitrag bAV</label>
+        <div class="input-wrap">
+          <input type="number" id="beitrag" value="200" min="50" max="600" step="10">
+          <span class="unit">€</span>
+        </div>
+        <span class="hint">Bis 338 €/Monat steuer- & SV-frei, bis 676 €/Monat nur steuerfrei (Stand 2026)</span>
+      </div>
+
+      <div class="field">
+        <label>Arbeitgeberzuschuss</label>
+        <div class="input-wrap">
+          <select id="agzuschuss">
+            <option value="0">Kein Zuschuss</option>
+            <option value="15" selected>15 % — gesetzliches Minimum</option>
+            <option value="20">20 %</option>
+            <option value="30">30 %</option>
+            <option value="50">50 % — großzügiger Arbeitgeber</option>
+            <option value="100">100 % — Arbeitgeber übernimmt alles</option>
+          </select>
+        </div>
+        <span class="hint">Seit 2022 mind. 15 % Pflicht bei Neuverträgen</span>
+      </div>
+
+      <div class="field">
+        <label>Vertragsqualität</label>
+        <div class="input-wrap">
+          <select id="vertrag">
+            <option value="gut">Moderner ETF-Tarif — freie Fondswahl, Nettopolice (~0,55 % Kosten)</option>
+            <option value="mittel" selected>Typischer Firmenvertrag — vom Arbeitgeber vorgegeben (~1,2 % Kosten)</option>
+            <option value="schlecht">Älterer Bestandsvertrag — klassisch, kaum Aktienanteil (~1,8 % Kosten)</option>
+          </select>
+        </div>
+        <span class="hint">Unsicher welcher Typ dein Vertrag ist? Die Effektivkosten stehen im Produktinformationsblatt (Strg+F → „Effektivkosten"). Unter 0,8 % = gut, über 1,5 % = schlecht.</span>
+      </div>
+
+      <div class="field">
+        <label>Jahre bis zur Rente</label>
+        <div class="slider-row">
+          <input type="range" id="jahre" min="5" max="40" value="25" step="1"
+            oninput="document.getElementById('jahre-val').textContent = this.value + ' J.'">
+          <span class="slider-val" id="jahre-val">25 J.</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Dein Steuersatz im Rentenalter</label>
+        <div class="slider-row">
+          <input type="range" id="steuersatz-rente" min="0" max="42" value="20" step="1"
+            oninput="document.getElementById('steuersatz-val').textContent = this.value + ' %'">
+          <span class="slider-val" id="steuersatz-val">20 %</span>
+        </div>
+        <span class="hint">20 % ist ein realistischer Durchschnittswert für gesetzlich Krankenversicherte mit mittlerem Einkommen. Wer im Alter wenig andere Einnahmen hat, liegt eher bei 15 %; wer viel Rente bezieht, eher bei 25–30 %.</span>
+      </div>
+
+    </div>
+    <button class="calc-btn" onclick="berechnen()">Jetzt berechnen →</button>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="results">
+
+    <div class="verdict fade" id="verdict">
+      <div class="verdict-icon" id="verdict-icon">✓</div>
+      <div class="verdict-text">
+        <div class="verdict-label" id="verdict-label">Ergebnis</div>
+        <div class="verdict-headline" id="verdict-headline">—</div>
+        <div class="verdict-sub" id="verdict-sub">—</div>
+      </div>
+    </div>
+
+    <div class="compare-grid fade">
+      <div class="compare-card" id="card-bav">
+        <div class="compare-header">
+          <span class="compare-name">Betriebliche AV</span>
+          <span class="tag" id="bav-tag">bAV</span>
+        </div>
+        <div class="big-num" id="bav-auszahlung">—</div>
+        <div class="num-label">Netto-Auszahlung im Rentenalter</div>
+        <div style="font-size:0.72rem; color:var(--ink-muted); margin-top:0.2rem;">≈ <span id="bav-real">—</span> in heutigem Geld (inflationsbereinigt)</div>
+        <div style="margin-top:0.75rem;">
+          <button onclick="toggleDetail('bav-detail','bav-toggle-icon','bav-toggle-btn')" style="background:none;border:none;font-family:var(--sans);font-size:0.78rem;color:var(--accent);font-weight:600;cursor:pointer;padding:0;display:flex;align-items:center;gap:0.3rem;">
+            <span id="bav-toggle-icon">▸</span><span id="bav-toggle-btn"> Rechenweg anzeigen</span>
+          </button>
+          <div id="bav-detail" style="display:none;margin-top:0.85rem;border-top:1px solid var(--border);padding-top:0.85rem;" class="breakdown">
+            <div class="br-row"><span class="lbl">Eigenbeitrag netto / Monat</span><span class="val" id="bav-eigen">—</span></div>
+            <div class="br-row"><span class="lbl">AG-Zuschuss / Monat</span><span class="val" id="bav-ag">—</span></div>
+            <div class="br-row"><span class="lbl">Gesamteinzahlung</span><span class="val" id="bav-einzahlung">—</span></div>
+            <div class="br-row"><span class="lbl">Rendite nach Kosten</span><span class="val" id="bav-rendite-val">—</span></div>
+            <div class="br-row"><span class="lbl">Kapital vor Steuer</span><span class="val" id="bav-kapital">—</span></div>
+            <div class="br-row"><span class="lbl">− Steuer & Krank.-Vers. + Pflege-Vers.</span><span class="val" id="bav-abzug-steuer">—</span></div>
+            <div class="br-row"><span class="lbl">− Gesetzliche RV-Minderung (real)</span><span class="val" id="bav-abzug-grv" style="color:var(--warn)">—</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="compare-card" id="card-etf">
+        <div class="compare-header">
+          <span class="compare-name">ETF-Sparplan privat</span>
+          <span class="tag" id="etf-tag">ETF</span>
+        </div>
+        <div class="big-num" id="etf-auszahlung">—</div>
+        <div class="num-label">Netto-Vermögen bei Renteneintritt</div>
+        <div style="font-size:0.72rem; color:var(--ink-muted); margin-top:0.2rem;">≈ <span id="etf-real">—</span> in heutigem Geld (inflationsbereinigt)</div>
+        <div style="margin-top:0.75rem;">
+          <button onclick="toggleDetail('etf-detail','etf-toggle-icon','etf-toggle-btn')" style="background:none;border:none;font-family:var(--sans);font-size:0.78rem;color:var(--accent);font-weight:600;cursor:pointer;padding:0;display:flex;align-items:center;gap:0.3rem;">
+            <span id="etf-toggle-icon">▸</span><span id="etf-toggle-btn"> Rechenweg anzeigen</span>
+          </button>
+          <div id="etf-detail" style="display:none;margin-top:0.85rem;border-top:1px solid var(--border);padding-top:0.85rem;" class="breakdown">
+            <div class="br-row"><span class="lbl">Sparrate netto / Monat</span><span class="val" id="etf-sparrate">—</span></div>
+            <div class="br-row"><span class="lbl">AG-Zuschuss</span><span class="val">— €</span></div>
+            <div class="br-row"><span class="lbl">Gesamteinzahlung</span><span class="val" id="etf-einzahlung">—</span></div>
+            <div class="br-row"><span class="lbl">Rendite nach Kosten</span><span class="val" id="etf-rendite-val">—</span></div>
+            <div class="br-row"><span class="lbl">Kapital vor Steuer</span><span class="val" id="etf-kapital">—</span></div>
+            <div class="br-row"><span class="lbl">Abgeltungsteuer (nach Teilfreistellung)</span><span class="val" id="etf-steuer-val">—</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card fade" id="card-nichts" style="margin-bottom:1.25rem; background:var(--surface2); border-color:var(--border); box-shadow:none; color:var(--ink-muted);">
+      <div class="compare-header">
+        <span class="compare-name" style="font-size:0.75rem; font-weight:700; letter-spacing:0.05em; text-transform:uppercase; color:var(--ink-muted);">Kein Investment — Geld bleibt auf dem Konto</span>
+        <span class="tag grey">Vergleich</span>
+      </div>
+      <div class="big-num dark" id="nichts-gespart" style="font-size:2rem; margin-top:0.5rem;">—</div>
+      <div class="num-label">Nominal gespartes Geld (ohne Zinsen)</div>
+
+      <div style="margin-top:0.75rem;">
+        <button onclick="toggleDetail('nichts-detail','nichts-toggle-icon','nichts-toggle-btn')" style="background:none; border:none; font-family:var(--sans); font-size:0.78rem; color:var(--accent); font-weight:600; cursor:pointer; padding:0; display:flex; align-items:center; gap:0.3rem;">
+          <span id="nichts-toggle-icon">▸</span><span id="nichts-toggle-btn"> Rechenweg anzeigen</span>
+        </button>
+        <div id="nichts-detail" style="display:none; margin-top:0.85rem; border-top:1px solid var(--border); padding-top:0.85rem;">
+          <div class="br-row" style="margin-bottom:0.5rem;"><span class="lbl">Monatliche Sparrate (netto)</span><span class="val" id="nd-sparrate">—</span></div>
+          <div class="br-row" style="margin-bottom:0.5rem;"><span class="lbl">Laufzeit</span><span class="val" id="nd-jahre">—</span></div>
+          <div class="br-row" style="margin-bottom:0.5rem;"><span class="lbl">Keine Verzinsung, keine Rendite</span><span class="val">0 %</span></div>
+          <div class="br-row" style="margin-bottom:0.5rem;"><span class="lbl">Nominaler Gesamtbetrag</span><span class="val" id="nd-gesamt">—</span></div>
+          <div class="br-row" style="margin-bottom:0.5rem;"><span class="lbl">Kaufkraft nach Inflation (2,5 % p.a.)</span><span class="val" id="nd-real" style="color:var(--warn)">—</span></div>
+          <div class="br-row"><span class="lbl">Unterschied zum ETF-Sparplan</span><span class="val" id="nd-vs-etf" style="color:var(--warn)">—</span></div>
+          <p style="font-size:0.7rem; color:var(--ink-muted); margin-top:0.75rem; line-height:1.5;">Hinweis: bAV und ETF-Werte oben sind ebenfalls nominal (nicht inflationsbereinigt) — alle drei Szenarien sind damit direkt vergleichbar.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card fade bar-section">
+      <div class="card-title">Vermögensvergleich nach Steuern</div>
+      <div class="bar-item">
+        <div class="bar-label">
+          <span class="name">bAV — Netto-Auszahlung</span>
+          <span class="amt" id="bar-bav-lbl">—</span>
+        </div>
+        <div class="bar-track"><div class="bar-fill bav" id="bar-bav" style="width:0%"></div></div>
+      </div>
+      <div class="bar-item">
+        <div class="bar-label">
+          <span class="name">ETF-Sparplan — Netto-Vermögen</span>
+          <span class="amt" id="bar-etf-lbl">—</span>
+        </div>
+        <div class="bar-track"><div class="bar-fill etf" id="bar-etf" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <div class="card fade" id="bilanz-card">
+      <div class="card-title">Gesamtbild bAV — Vorteile & Nachteile</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+
+        <div style="background:#edf7f2; border:1px solid #a8ddc3; border-radius:10px; padding:1.25rem;">
+          <div style="font-size:0.68rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:#1a6b4a; margin-bottom:0.85rem;">✓ Vorteile heute</div>
+          <div class="br-row" style="margin-bottom:0.5rem;"><span class="lbl">Steuerersparnis (Ansparphase)</span><span class="val" id="bilanz-steuer" style="color:#1a6b4a">—</span></div>
+          <div class="br-row"><span class="lbl">AG-Zuschuss (gesamt)</span><span class="val" id="bilanz-ag" style="color:#1a6b4a">—</span></div>
+        </div>
+
+        <div style="background:#fdf2f1; border:1px solid #f0b8b3; border-radius:10px; padding:1.25rem;">
+          <div style="font-size:0.68rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:#c0392b; margin-bottom:0.85rem;">− Nachteile später</div>
+          <div class="br-row" style="margin-bottom:0.5rem;"><span class="lbl">Steuer auf Betriebsrente</span><span class="val" id="bilanz-rentensteuer" style="color:#c0392b">—</span></div>
+          <div class="br-row" style="margin-bottom:0.5rem;"><span class="lbl">Kranken-Vers. + Pflege-Vers. im Alter</span><span class="val" id="bilanz-kv" style="color:#c0392b">—</span></div>
+          <div class="br-row"><span class="lbl">Geringere gesetzliche RV (ca.)</span><span class="val" id="bilanz-grv" style="color:#c0392b">—</span></div>
+        </div>
+
+      </div>
+      <p style="font-size:0.72rem; color:var(--ink-muted); margin-top:1rem; line-height:1.6;">
+        * GRV-Kürzung: Schätzung basierend auf Rentenpunkteverlust durch Entgeltumwandlung (~50.000 € Durchschnittsentgelt, ~39 € Rentenwert/Punkt, <span id="bilanz-grv-jahre">—</span> Jahre Bezugsdauer). Als Näherungswert — tatsächliche Kürzung abhängig von Einkommensverlauf und Gesetzgebung.
+      </p>
+    </div>
+
+    <div class="card fade assumptions">
+      <div class="card-title">Annahmen & Vereinfachungen</div>
+      <ul>
+        <li>ETF-Rendite: 6,5 % p.a. (konservativer MSCI World Schätzwert), abzüglich ~0,2 % TER</li>
+        <li>bAV-Rendite vor Kosten: ETF-Tarif ~6,5 % (hohe Aktienquote), typischer Firmenvertrag ~4 % (gemischte Anlage ~50 % Aktien), Altvertrag ~2,5 % (überwiegend Deckungsstock) — jeweils abzüglich Effektivkosten</li>
+        <li>Steuer- & SV-Ersparnis: vereinfachter Grenzsteuersatz je nach Steuerklasse + ~20,5 % SV-Anteil</li>
+        <li>bAV im Rentenalter: volle Einkommensteuer zum gewählten Satz + Kranken-Vers. & Pflege-Vers. (~18,6 %) nur auf den Teil über dem Freibetrag von 197,75 €/Monat (Stand 2026)</li>
+        <li>ETF: Abgeltungsteuer 26,375 % auf Gewinnanteil nach 30 % Teilfreistellung</li>
+        <li>Inflation nicht berücksichtigt — betrifft beide Seiten gleichermaßen</li>
+        <li id="wechsel-hinweis" style="display:none">⚠️ Bei Arbeitgeberwechsel können bAV-Verträge verfallen oder ungünstig übertragen werden — wichtiger Faktor bei langen Laufzeiten</li>
+      </ul>
+    </div>
+
+    <p class="disclaimer fade">
+      <strong>Wichtiger Hinweis:</strong> Dieser Rechner dient ausschließlich zur unverbindlichen Orientierung und stellt keine Finanz-, Steuer- oder Rechtsberatung dar. Alle Berechnungen basieren auf vereinfachten Annahmen und Schätzwerten — individuelle Faktoren wie persönliche Steuersituation, konkrete Vertragsbedingungen oder Änderungen der Gesetzeslage werden nicht vollständig berücksichtigt. Der Rechner gilt für gesetzlich Krankenversicherte (GKV). Die Ergebnisse sind keine Entscheidungsgrundlage für den Abschluss oder die Kündigung eines Vertrags. Für eine verbindliche Einschätzung wende dich an einen unabhängigen, zugelassenen Finanz- oder Steuerberater. Haftung für die Richtigkeit, Vollständigkeit oder Aktualität der Angaben wird nicht übernommen. Stand: 2026.
+    </p>
+
+  </div>
+  <!-- RECHTE SPALTE: Sidebar -->
+  <div style="position:sticky; top:1.5rem; display:flex; flex-direction:column; gap:1rem;">
+
+    <div class="card" style="padding:1.5rem;">
+      <div class="card-title">Was ist die bAV?</div>
+      <p style="font-size:0.82rem; line-height:1.7; color:var(--ink-muted);">Die betriebliche Altersvorsorge (bAV) ist eine vom Arbeitgeber organisierte Zusatzrente. Du zahlst einen Teil deines Bruttogehalts direkt in einen Vorsorgevertrag — noch bevor Steuern und Sozialabgaben abgezogen werden. Das ist der sogenannte <strong>Steuervorteil</strong>.</p>
+    </div>
+
+    <div class="card" style="padding:1.5rem;">
+      <div class="card-title">Wann lohnt sich bAV?</div>
+      <p style="font-size:0.82rem; line-height:1.7; color:var(--ink-muted);">Die bAV lohnt sich vor allem wenn dein Arbeitgeber <strong>mehr als 15 % Zuschuss</strong> zahlt und du einen günstigen ETF-basierten Vertrag bekommst. Ohne Zuschuss oder mit einem teuren Altvertrag ist ein privater ETF-Sparplan in den meisten Fällen besser.</p>
+    </div>
+
+    <div class="card" style="padding:1.5rem;">
+      <div class="card-title">Entgeltumwandlung erklärt</div>
+      <p style="font-size:0.82rem; line-height:1.7; color:var(--ink-muted);">Bei der Entgeltumwandlung verzichtest du auf einen Teil deines Bruttogehalts zugunsten der bAV. Du zahlst dadurch <strong>weniger Steuern und Sozialabgaben</strong> — aber auch weniger in die gesetzliche Rentenversicherung. Dieser Effekt ist im Rechner berücksichtigt.</p>
+    </div>
+
+    <div class="card" style="padding:1.5rem;">
+      <div class="card-title">Arbeitgeberwechsel</div>
+      <p style="font-size:0.82rem; line-height:1.7; color:var(--ink-muted);">Ein häufig unterschätztes Risiko: Bei einem Jobwechsel muss der neue Arbeitgeber deinen alten bAV-Vertrag <strong>nicht übernehmen</strong>. Du kannst mit mehreren ruhenden Verträgen enden, die einzeln kaum rentabel sind. Wer häufig den Job wechselt, ist mit einem privaten ETF-Sparplan oft flexibler.</p>
+    </div>
+
+    <div class="card" style="padding:1.5rem;">
+      <div class="card-title">Glossar</div>
+      <div style="font-size:0.8rem; line-height:1.8; color:var(--ink-muted);">
+        <div style="margin-bottom:0.6rem;"><strong style="color:var(--ink);">Effektivkosten</strong><br>Alle jährlichen Kosten eines bAV-Vertrags zusammengefasst. Stehen im Produktinformationsblatt (Strg+F → "Effektivkosten").</div>
+        <div style="margin-bottom:0.6rem;"><strong style="color:var(--ink);">Rentenpunkte</strong><br>Maßeinheit für die gesetzliche Rente. Durch Entgeltumwandlung zahlst du weniger ein und sammelst weniger Rentenpunkte.</div>
+        <div style="margin-bottom:0.6rem;"><strong style="color:var(--ink);">Teilfreistellung</strong><br>Bei ETF-Fonds werden 30 % der Gewinne steuerfrei gestellt — dadurch sinkt die effektive Steuerbelastung.</div>
+        <div><strong style="color:var(--ink);">Nachgelagerte Besteuerung</strong><br>bAV-Auszahlungen werden erst im Rentenalter voll versteuert — anders als beim privaten ETF-Sparplan.</div>
+      </div>
+    </div>
+
+    <div class="card" style="padding:1.5rem; border-color:#f0b84d; background:#fffbf0;">
+      <div class="card-title" style="color:#8a6200;">⚠️ Einschränkungen des Rechners</div>
+      <div style="font-size:0.78rem; line-height:1.8; color:#5a4200;">
+        <div style="margin-bottom:0.4rem;">— Nur für gesetzlich Krankenversicherte</div>
+        <div style="margin-bottom:0.4rem;">— Nur Direktversicherung (häufigster Weg)</div>
+        <div style="margin-bottom:0.4rem;">— Konstante Gehälter und Beiträge angenommen</div>
+        <div style="margin-bottom:0.4rem;">— Zukünftige Gesetzesänderungen nicht berücksichtigt</div>
+        <div style="margin-bottom:0.4rem;">— Rentenpunktminderung als Näherungswert</div>
+        <div>— Keine Berücksichtigung von Vorabpauschale beim ETF</div>
+      </div>
+    </div>
+
+  </div><!-- Ende Sidebar -->
+
+  </div><!-- Ende Grid -->
+</main>
+
+<footer style="background:#1a1a18; color:rgba(255,255,255,0.5); padding:2.5rem 1.5rem; margin-top:2rem;">
+  <div style="max-width:860px; margin:0 auto;">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:2rem;">
+
+      <div>
+        <div style="font-family:var(--sans); font-size:1rem; font-weight:700; color:white; margin-bottom:0.5rem;">Kapital<span style="color:#4ade80;">Plan</span></div>
+        <div style="font-size:0.75rem; line-height:1.6;">Unabhängige Finanzrechner<br>für bessere Entscheidungen.</div>
+      </div>
+
+      <div id="impressum">
+        <div style="font-size:0.7rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:rgba(255,255,255,0.3); margin-bottom:0.75rem;">Impressum</div>
+        <div style="font-size:0.78rem; line-height:1.8; color:rgba(255,255,255,0.6);">
+          Robert Meyer<br>
+          Paulinenallee 51<br>
+          22769 Hamburg<br>
+          <br>
+          E-Mail: rpmax.meyer@ewetel.net<br>
+          Telefon: +49 157 87294785<br>
+          <br>
+          Verantwortlich für den Inhalt gemäß § 18 Abs. 2 MStV:<br>
+          Robert Meyer (Anschrift wie oben)<br>
+          <br>
+          <span style="color:rgba(255,255,255,0.35); font-size:0.72rem;">
+            Haftungshinweis: Die Inhalte dieser Website wurden sorgfältig erstellt. Für die Richtigkeit, Vollständigkeit und Aktualität der Inhalte wird keine Gewähr übernommen. Diese Website stellt keine Finanz-, Steuer- oder Rechtsberatung dar.
+          </span>
+        </div>
+      </div>
+
+    </div>
+    <div style="border-top:1px solid rgba(255,255,255,0.08); margin-top:2rem; padding-top:2rem;" id="datenschutz">
+      <div style="font-size:0.7rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:rgba(255,255,255,0.3); margin-bottom:1rem;">Datenschutzerklärung</div>
+      <div style="font-size:0.75rem; line-height:1.9; color:rgba(255,255,255,0.5); max-width:700px;">
+
+        <strong style="color:rgba(255,255,255,0.7);">1. Verantwortlicher</strong><br>
+        Verantwortlicher im Sinne der DSGVO ist Robert Meyer, Paulinenallee 51, 22769 Hamburg, rpmax.meyer@ewetel.net.<br><br>
+
+        <strong style="color:rgba(255,255,255,0.7);">2. Erhebung und Speicherung personenbezogener Daten</strong><br>
+        Diese Website erhebt und speichert keine personenbezogenen Daten. Alle Berechnungen erfolgen ausschließlich lokal im Browser des Nutzers. Es werden keine Eingaben an einen Server übertragen oder gespeichert.<br><br>
+
+        <strong style="color:rgba(255,255,255,0.7);">3. Hosting (Netlify)</strong><br>
+        Diese Website wird über Netlify Inc., 44 Montgomery Street, Suite 300, San Francisco, CA 94104, USA gehostet. Beim Aufruf der Website werden automatisch technische Daten (insbesondere IP-Adresse, Zeitpunkt des Zugriffs, Browsertyp) in Server-Logfiles gespeichert. Diese Verarbeitung erfolgt auf Basis von Art. 6 Abs. 1 lit. f DSGVO. Weitere Informationen: netlify.com/privacy.<br><br>
+
+        <strong style="color:rgba(255,255,255,0.7);">4. Google Fonts</strong><br>
+        Diese Website lädt Schriftarten von Google Fonts (Google LLC, 1600 Amphitheatre Parkway, Mountain View, CA 94043, USA). Dabei wird die IP-Adresse des Nutzers an Google übertragen. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO. Weitere Informationen: policies.google.com/privacy.<br><br>
+
+        <strong style="color:rgba(255,255,255,0.7);">5. Affiliate-Links</strong><br>
+        Diese Website kann Affiliate-Links zu Drittanbietern enthalten. Beim Klick auf solche Links können durch den jeweiligen Anbieter Cookies gesetzt werden. Auf diese Datenverarbeitung haben wir keinen Einfluss. Bitte beachten Sie die Datenschutzerklärung des jeweiligen Anbieters.<br><br>
+
+        <strong style="color:rgba(255,255,255,0.7);">6. Ihre Rechte</strong><br>
+        Sie haben das Recht auf Auskunft, Berichtigung, Löschung und Einschränkung der Verarbeitung Ihrer Daten sowie das Recht auf Datenübertragbarkeit. Da wir keine personenbezogenen Daten erheben, ist eine Auskunft in der Regel nicht möglich. Bei Fragen wenden Sie sich an: rpmax.meyer@ewetel.net.<br><br>
+
+        <strong style="color:rgba(255,255,255,0.7);">7. Beschwerderecht</strong><br>
+        Sie haben das Recht, sich bei einer Datenschutz-Aufsichtsbehörde zu beschweren. Zuständig ist der Hamburgische Beauftragte für Datenschutz und Informationsfreiheit, Ludwig-Erhard-Str. 22, 20459 Hamburg.
+
+      </div>
+    </div>
+
+    <div style="border-top:1px solid rgba(255,255,255,0.08); margin-top:2rem; padding-top:1.25rem; font-size:0.7rem; color:rgba(255,255,255,0.25);">
+      © 2026 KapitalPlan · Alle Angaben ohne Gewähr · Stand 2026
+    </div>
+  </div>
+</footer>
+
+<script>
+function toggleDetail(detailId, iconId, btnId) {
+  const detail = document.getElementById(detailId);
+  const icon = document.getElementById(iconId);
+  const btn = document.getElementById(btnId);
+  if (detail.style.display === 'none') {
+    detail.style.display = 'block';
+    icon.textContent = '▾';
+    btn.textContent = ' Rechenweg ausblenden';
+  } else {
+    detail.style.display = 'none';
+    icon.textContent = '▸';
+    btn.textContent = ' Rechenweg anzeigen';
+  }
+}
+
+function fmt(n) {
+  return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n);
+}
+
+function grenzsteuersatz(monatsbrutto, klasse) {
+  const jb = monatsbrutto * 12;
+  if (klasse == 3) {
+    if (jb < 34000) return 0.14;
+    if (jb < 70000) return 0.28;
+    return 0.37;
+  } else {
+    if (jb < 17000) return 0.14;
+    if (jb < 35000) return 0.28;
+    if (jb < 60000) return 0.37;
+    return 0.42;
+  }
+}
+
+const SV = 0.205;
+
+function berechnen() {
+  const brutto   = parseFloat(document.getElementById('brutto').value);
+  const klasse   = document.getElementById('stklasse').value;
+  const beitrag  = parseFloat(document.getElementById('beitrag').value);
+  const agP      = parseFloat(document.getElementById('agzuschuss').value) / 100;
+  const vertrag  = document.getElementById('vertrag').value;
+  const jahre    = parseInt(document.getElementById('jahre').value);
+
+  const steuersatzRente = parseFloat(document.getElementById('steuersatz-rente').value) / 100;
+
+  // Basisrendite je nach Vertragstyp:
+  // Gut (ETF-Tarif): ~90% Aktienquote → 6,5%
+  // Mittel (Firmenvertrag): ~50% Aktien, Rest Anleihen/Deckungsstock → 4%
+  // Schlecht (Altvertrag): ~20% Aktien, klassischer Deckungsstock → 2,5%
+  const bavBasis   = vertrag === 'gut' ? 0.065 : vertrag === 'mittel' ? 0.04 : 0.025;
+  const bavKosten  = vertrag === 'gut' ? 0.0055 : vertrag === 'mittel' ? 0.012 : 0.018;
+  const bavRendite = bavBasis - bavKosten;
+  const etfRendite = 0.065 - 0.002;
+
+  const gSatz      = grenzsteuersatz(brutto, klasse);
+  const ersparnis  = beitrag * (gSatz + SV);
+  const eigenNetto = beitrag - ersparnis;
+  const agZuschuss = beitrag * agP;
+  const bavMonatl  = beitrag + agZuschuss;
+  const etfSparrate = eigenNetto;
+
+  const bavKapital = bavMonatl * 12 * ((Math.pow(1 + bavRendite, jahre) - 1) / bavRendite);
+  const etfKapital = etfSparrate * 12 * ((Math.pow(1 + etfRendite, jahre) - 1) / etfRendite);
+
+  const bavEinzahlung = bavMonatl * 12 * jahre;
+  const etfEinzahlung = etfSparrate * 12 * jahre;
+
+  // bAV im Rentenalter: Einkommensteuer auf gesamtes Kapital + KV
+  const kvSatz = 0.186;
+  const kvFreibetragJahr = 2373;
+  const bavJahresrente = bavKapital * 0.04;
+  const kvPflichtig = Math.max(0, bavJahresrente - kvFreibetragJahr) / bavJahresrente;
+  const bavAbzug = steuersatzRente + (kvSatz * kvPflichtig);
+  const bavNettoOhneGRV = bavKapital * (1 - bavAbzug);
+
+  // GRV-Rentenkürzung: inflationsbereinigt auf heutigen Geldwert
+  const durchschnittsentgelt = 50000;
+  const rentenwert = 39;
+  const rentenbezugsdauer = 20;
+  const rpVerlustProJahr = (beitrag * 12) / durchschnittsentgelt;
+  const rpVerlustGesamt = rpVerlustProJahr * jahre;
+  const monatlicheRentenkürzung = rpVerlustGesamt * rentenwert;
+  // Nominale GRV-Kürzung über 20 Jahre Bezug
+  const grvNominal = monatlicheRentenkürzung * 12 * rentenbezugsdauer;
+  // Inflationsbereinigt: GRV-Kürzung tritt in der Zukunft auf → auf heutigen Wert abdiskontieren
+  const grvReal = grvNominal / Math.pow(1 + 0.025, jahre);
+  const bavNetto = bavNettoOhneGRV - grvReal;
+
+  // ETF: Abgeltungsteuer nur auf Gewinn nach 30% Teilfreistellung
+  const etfGewinn = etfKapital - etfEinzahlung;
+  const etfSteuer = etfGewinn * 0.70 * 0.26375;
+  const etfNetto  = etfKapital - etfSteuer;
+
+  const diff      = bavNetto - etfNetto;
+  const bavBesser = diff > 0;
+  const diffPct   = Math.round(Math.abs(diff) / Math.min(bavNetto, etfNetto) * 100);
+
+  // Zahlen einsetzen
+  document.getElementById('bav-eigen').textContent      = fmt(eigenNetto) + ' / Mo.';
+  document.getElementById('bav-ag').textContent         = fmt(agZuschuss) + ' / Mo.';
+  document.getElementById('bav-einzahlung').textContent = fmt(bavEinzahlung);
+  document.getElementById('bav-kapital').textContent    = fmt(bavKapital);
+  document.getElementById('bav-auszahlung').textContent = fmt(bavNetto);
+  document.getElementById('bav-auszahlung').className   = 'big-num ' + (bavBesser ? 'green' : 'dark');
+
+  document.getElementById('etf-sparrate').textContent   = fmt(etfSparrate) + ' / Mo.';
+  document.getElementById('etf-einzahlung').textContent = fmt(etfEinzahlung);
+  document.getElementById('etf-kapital').textContent    = fmt(etfKapital);
+  document.getElementById('etf-auszahlung').textContent = fmt(etfNetto);
+  document.getElementById('etf-auszahlung').className   = 'big-num ' + (!bavBesser ? 'green' : 'dark');
+
+  // Karten
+  document.getElementById('card-bav').className = 'compare-card ' + (bavBesser ? 'winner' : 'loser');
+  document.getElementById('card-etf').className = 'compare-card ' + (!bavBesser ? 'winner' : 'loser');
+  document.getElementById('bav-tag').className  = 'tag ' + (bavBesser ? 'green' : 'red');
+  document.getElementById('bav-tag').textContent = bavBesser ? '✓ Vorne' : '✗ Hinten';
+  document.getElementById('etf-tag').className  = 'tag ' + (!bavBesser ? 'green' : 'grey');
+  document.getElementById('etf-tag').textContent = !bavBesser ? '✓ Vorne' : 'ETF';
+
+  // Balken
+  const maxV = Math.max(bavNetto, etfNetto);
+  document.getElementById('bar-bav').style.width = (bavNetto / maxV * 100) + '%';
+  document.getElementById('bar-etf').style.width = (etfNetto / maxV * 100) + '%';
+  document.getElementById('bar-bav-lbl').textContent = fmt(bavNetto);
+  document.getElementById('bar-etf-lbl').textContent = fmt(etfNetto);
+
+  // Verdict
+  const v = document.getElementById('verdict');
+  const icon = document.getElementById('verdict-icon');
+  if (bavBesser) {
+    v.className = 'verdict fade positive';
+    icon.textContent = '✓';
+    document.getElementById('verdict-label').textContent = 'Empfehlung';
+    document.getElementById('verdict-headline').textContent =
+      agP >= 0.15
+        ? `Die bAV lohnt sich — sie liegt ${diffPct} % vorne.`
+        : `Die bAV liegt ${diffPct} % vorne — aber knapp.`;
+    document.getElementById('verdict-sub').textContent =
+      `Nach ${jahre} Jahren hast du mit der bAV voraussichtlich ${fmt(Math.abs(diff))} mehr als mit einem gleichwertigen ETF-Sparplan. Der Arbeitgeberzuschuss ist der entscheidende Hebel.`;
+  } else {
+    v.className = 'verdict fade ' + (agP === 0 ? 'negative' : 'neutral');
+    icon.textContent = agP === 0 ? '✗' : '~';
+    document.getElementById('verdict-label').textContent = agP === 0 ? 'Kritisch' : 'Zum Nachdenken';
+    document.getElementById('verdict-headline').textContent =
+      agP === 0
+        ? `Ohne AG-Zuschuss liegt der ETF-Sparplan ${diffPct} % vorne.`
+        : `Der ETF-Sparplan liegt ${diffPct} % vorne — prüfe deinen Vertrag.`;
+    document.getElementById('verdict-sub').textContent =
+      agP === 0
+        ? `Ohne Arbeitgeberzuschuss verliert die bAV deutlich gegen einen günstigen ETF-Sparplan. Frag deinen Arbeitgeber ob ein Zuschuss möglich ist.`
+        : `Mit einem günstigeren ETF-basierten Tarif (Nettopolice) könnte sich das Bild drehen. Frag deinen Arbeitgeber nach besseren Vertragsoptionen.`;
+  }
+
+  // Bilanz-Werte
+  const steuerersparnis = ersparnis * 12 * jahre;
+  const agGesamt = agZuschuss * 12 * jahre;
+  const rentensteuer = bavKapital * steuersatzRente;
+  const kvGesamt = bavKapital * kvSatz * kvPflichtig;
+
+  document.getElementById('bilanz-steuer').textContent = '+' + fmt(steuerersparnis);
+  document.getElementById('bilanz-ag').textContent = '+' + fmt(agGesamt);
+  document.getElementById('bilanz-rentensteuer').textContent = '−' + fmt(rentensteuer);
+  document.getElementById('bilanz-kv').textContent = '−' + fmt(kvGesamt);
+  document.getElementById('bilanz-grv').textContent = '~−' + fmt(grvReal);
+  document.getElementById('bilanz-grv-jahre').textContent = rentenbezugsdauer + ' Jahre (inflationsbereinigt)';
+  // Dritte Box: Kein Investment
+  const inflation = 0.025;
+  const nichtsSparrate = eigenNetto;
+  const nichtsGespart = nichtsSparrate * 12 * jahre;
+  const nichtsReal = nichtsGespart / Math.pow(1 + inflation, jahre);
+  const nichtsVsEtf = etfNetto - nichtsGespart;
+
+  document.getElementById('bav-rendite-val').textContent = ((bavRendite * 100).toFixed(2)).replace('.', ',') + ' % p.a.';
+  document.getElementById('bav-abzug-steuer').textContent = '−' + fmt(bavKapital * bavAbzug);
+  document.getElementById('bav-abzug-grv').textContent = '−' + fmt(grvReal);
+  document.getElementById('bav-real').textContent = fmt(bavNetto / Math.pow(1 + inflation, jahre));
+  document.getElementById('etf-rendite-val').textContent = ((etfRendite * 100).toFixed(2)).replace('.', ',') + ' % p.a.';
+  document.getElementById('etf-steuer-val').textContent = '−' + fmt(etfSteuer);
+  document.getElementById('etf-real').textContent = fmt(etfNetto / Math.pow(1 + inflation, jahre));
+  document.getElementById('nichts-gespart').textContent = fmt(nichtsGespart);
+  document.getElementById('nd-sparrate').textContent = fmt(nichtsSparrate) + ' / Mo.';
+  document.getElementById('nd-jahre').textContent = jahre + ' Jahre';
+  document.getElementById('nd-gesamt').textContent = fmt(nichtsGespart);
+  document.getElementById('nd-real').textContent = fmt(nichtsReal);
+  document.getElementById('nd-vs-etf').textContent = '−' + fmt(nichtsVsEtf);
+
+  document.getElementById('wechsel-hinweis').style.display = jahre > 20 ? 'list-item' : 'none';
+
+  const results = document.getElementById('results');
+  results.classList.add('visible');
+  setTimeout(() => results.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+}
+</script>
+</body>
+</html>
